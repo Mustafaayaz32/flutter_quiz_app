@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quiz_app/questions_screen.dart';
-import 'package:flutter_quiz_app/start_screen.dart';
+import 'package:flutter_quiz_app/data/quiz_questions_data.dart';
+import 'package:flutter_quiz_app/QuestionsScreen/questions_screen.dart';
+import 'package:flutter_quiz_app/ResultScreen/result_screen.dart';
+import 'package:flutter_quiz_app/StartScreen/start_screen.dart';
 
 class Quiz extends StatefulWidget {
   const Quiz({super.key});
@@ -11,16 +13,48 @@ class Quiz extends StatefulWidget {
 
 class _QuizState extends State<Quiz> {
   Widget? activeScreen;
+  List<String> selectedAnswers = [];
 
   @override
   void initState() {
-    activeScreen = StartScreen(openQuestionsScreen);
+    activeScreen = StartScreen(changeScreen);
     super.initState();
   }
 
-  void openQuestionsScreen() {
+  void changeScreen() {
     setState(() {
-      activeScreen = const QuestionsScreen();
+      activeScreen = QuestionsScreen(
+        addSelectedAnswerToList: addSelectedAnswerToList,
+        getLastSelectedAnswerAndRemove: getLastSelectedAnswerAndRemove,
+      );
+    });
+  }
+
+  void addSelectedAnswerToList(String answer) {
+    selectedAnswers.add(answer);
+
+    if (selectedAnswers.length == questions.length) {
+      setState(() {
+        activeScreen = ResultScreen(
+          selectedAnswers: selectedAnswers,
+          restartQuiz: restartQuiz,
+        );
+      });
+    }
+  }
+
+  String getLastSelectedAnswerAndRemove() {
+    String lastSelectedAnswer = selectedAnswers.last;
+    selectedAnswers.remove(lastSelectedAnswer);
+    return lastSelectedAnswer;
+  }
+
+  void restartQuiz() {
+    setState(() {
+      selectedAnswers = [];
+      activeScreen = QuestionsScreen(
+          getLastSelectedAnswerAndRemove: getLastSelectedAnswerAndRemove,
+          addSelectedAnswerToList: addSelectedAnswerToList);
     });
   }
 
